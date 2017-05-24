@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -11,20 +14,16 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import miventana.MiVentana;
 
@@ -38,6 +37,24 @@ public class GestionMapas {
     private TreeSet<Provincia> provinciasEspaña = new TreeSet();
     private TreeSet<Poblacion> pueblosEspaña = new TreeSet();
 
+    public GestionMapas() {
+        miVentana = new MiVentana("Búsqueda de Poblaciones");
+
+        try {
+            cargarProvinciasDeFichero("src/datos/provincias.txt");
+            cargarPoblacionesDeFichero("src/datos/poblaciones.txt");
+        } catch (IOException ex) {
+            Logger.getLogger(GestionMapas.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        insertarPoblacionesEnProvincias();
+
+        miVentana.setSize(400, 500);
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        miVentana.setLocation(dim.width / 2 - miVentana.getSize().width / 2, dim.height / 2 - miVentana.getSize().height / 2);
+        miVentana.setVisible(true);
+    }
+    
     private void cargarProvinciasDeFichero(String nombreFichero) throws IOException {
         FileReader fileReader;
         BufferedReader bufferedReader = null;
@@ -79,7 +96,7 @@ public class GestionMapas {
         }
     }
 
-    private void insertarPoblaciones() {
+    private void insertarPoblacionesEnProvincias() {
         for (Poblacion poblacion : pueblosEspaña) {
             for (Provincia provincia : provinciasEspaña) {
                 if (poblacion.getCodProvincia() == provincia.getIdProvincia()) {
@@ -90,58 +107,55 @@ public class GestionMapas {
 
     }
 
-    public GestionMapas() {
-        miVentana = new MiVentana("Búsqueda de Poblaciones");
-
-        try {
-            cargarProvinciasDeFichero("src/datos/provincias.txt");
-            cargarPoblacionesDeFichero("src/datos/poblaciones.txt");
-        } catch (IOException ex) {
-            Logger.getLogger(GestionMapas.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        insertarPoblaciones();
-
-        miVentana.setSize(400, 500);
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        miVentana.setLocation(dim.width / 2 - miVentana.getSize().width / 2, dim.height / 2 - miVentana.getSize().height / 2);
-        miVentana.setVisible(true);
-    }
-
     private void colocarInterfaz() {
         Container contentPane = miVentana.getContentPane();
-        JComboBox comboBoxPoblaciones = new JComboBox();
+        
         
         JPanel panelPrincipal = new JPanel(new BorderLayout());
         panelPrincipal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 2), "Búsqueda"));
 
-        JPanel panelProvincias = new JPanel();
-        Box caja = Box.createVerticalBox();
+        JPanel panelProvincias = new JPanel(new GridBagLayout());
         
         panelProvincias.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 1), "Búsqueda de Localidades por Provincia"));
         Provincia[] provincias = obtenerArrayProvincias();
         JLabel etiquetaProvincia= new JLabel("Provincias");
         JLabel etiquetaLocalidad= new JLabel("Localidades");
         JComboBox comboBoxProvincias = new JComboBox(provincias);
-        caja.add(etiquetaProvincia);
-        caja.add(comboBoxProvincias);
-        caja.add(etiquetaLocalidad);
-        caja.add(comboBoxPoblaciones);
-        panelProvincias.add(caja);
+        comboBoxProvincias.setPreferredSize(new Dimension(175,25));
+        JComboBox comboBoxPoblaciones = new JComboBox();
+        comboBoxPoblaciones.setPreferredSize(new Dimension(175,25));
+        
+        GridBagConstraints gBConstraints = new GridBagConstraints();
+        gBConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gBConstraints.gridx = 0;
+        gBConstraints.gridy = 0;
+        panelProvincias.add(etiquetaProvincia, gBConstraints);
+        gBConstraints.gridx = 1;
+        panelProvincias.add(comboBoxProvincias, gBConstraints);
+        gBConstraints.insets= new Insets(10, 0, 10 , 0);
+        gBConstraints.gridx = 0;
+        gBConstraints.gridy = 1;
+        panelProvincias.add(etiquetaLocalidad, gBConstraints);
+        gBConstraints.gridx = 1;
+        panelProvincias.add(comboBoxPoblaciones, gBConstraints);
         comboBoxProvincias.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent ie) {
                 if (ie.getStateChange() == ItemEvent.SELECTED) {
                     TreeSet<Poblacion> treePoblaciones = new TreeSet();
                     for (Provincia provincia : provinciasEspaña) {
-                        if (((Provincia)comboBoxProvincias.getSelectedItem()).getNombre().equals(provincia.getNombre())) {
+                        if (((Provincia) comboBoxProvincias.getSelectedItem()).getNombre().equals(provincia.getNombre())) {
                             treePoblaciones = provincia.getListaPoblaciones();
                         }
                     }
-                    
-                    Poblacion[] poblaciones = obtenerArrayProvincias(treePoblaciones);
+
+                    Poblacion[] poblaciones = obtenerArrayPoblaciones(treePoblaciones);
                     comboBoxPoblaciones.setModel(new DefaultComboBoxModel(poblaciones));
-                    panelProvincias.add(comboBoxPoblaciones);
+                    gBConstraints.gridx = 0;
+                    gBConstraints.gridy = 1;
+                    panelProvincias.add(etiquetaLocalidad, gBConstraints);
+                    gBConstraints.gridx = 1;
+                    panelProvincias.add(comboBoxPoblaciones, gBConstraints);
                 }
             }
         });
@@ -150,14 +164,11 @@ public class GestionMapas {
             public void itemStateChanged(ItemEvent ie) {
                 if (ie.getStateChange() == ItemEvent.SELECTED) {
                     for (Poblacion poblacion : pueblosEspaña) {
-                        if (((Poblacion)comboBoxPoblaciones.getSelectedItem()).getNombre().equals(poblacion.getNombre())) {
-                            JOptionPane.showMessageDialog(null, poblacion.getNombre() +": \n-Latitud-> " +
-                                                                poblacion.getLatitud()+" \n-Longitud-> " +
-                                                                poblacion.getLongitud(),"Localidad Seleccionada",JOptionPane.INFORMATION_MESSAGE);
-                            System.out.println(poblacion);
-                            System.out.println("Latitud -> " + poblacion.getLatitud() );
-                            System.out.println("Longitud -> " + poblacion.getLongitud());
-                        }
+                        if (((Poblacion) comboBoxPoblaciones.getSelectedItem()).getNombre().equals(poblacion.getNombre())) {
+                            JOptionPane.showMessageDialog(null, poblacion.getNombre() + ": \n-Latitud-> "
+                                    + poblacion.getLatitud() + " \n-Longitud-> "
+                                    + poblacion.getLongitud(), "Localidad Seleccionada", JOptionPane.INFORMATION_MESSAGE);
+                         }
                     }
                 }
             }
@@ -182,7 +193,7 @@ public class GestionMapas {
         return provincias;
     }
 
-    private Poblacion[] obtenerArrayProvincias(TreeSet<Poblacion> treePoblaciones) {
+    private Poblacion[] obtenerArrayPoblaciones(TreeSet<Poblacion> treePoblaciones) {
         Poblacion[] poblaciones = new Poblacion[treePoblaciones.size()];
         int i = 0;
         for (Poblacion poblacion : treePoblaciones) {
