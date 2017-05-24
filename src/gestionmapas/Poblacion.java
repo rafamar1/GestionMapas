@@ -27,10 +27,15 @@ public class Poblacion implements Comparable{
         this.codProvincia = codProvincia;
         this.latitud = latitud;
         this.longitud = longitud;
-        
     }
 
-    public double getLongitud() {
+    /*Este constructor solo es utilizado para comprobar la validez de las clases en el test*/
+    public Poblacion() {
+    }
+    
+    
+
+ public double getLongitud() {
         return longitud;
     }
 
@@ -46,10 +51,6 @@ public class Poblacion implements Comparable{
         return nombre;
     }
     
-    public  int obtenCodigoProvincia (){
-        return this.codProvincia/1000;
-    }
-
     @Override
     public String toString() {
         return nombre;

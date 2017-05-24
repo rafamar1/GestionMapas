@@ -1,40 +1,13 @@
 package gestionmapas;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.RowFilter;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
+import javax.swing.*;
+import javax.swing.table.*;
 import miventana.MiVentana;
 
 /**
@@ -246,7 +219,7 @@ public class GestionMapas {
         return provincias;
     }
 
-    private Poblacion[] obtenerArrayPoblacionesEspaña() {
+    public Poblacion[] obtenerArrayPoblacionesEspaña() {
         Poblacion[] poblaciones = new Poblacion[pueblosEspaña.size()];
         int i = 0;
         for (Poblacion poblacion : pueblosEspaña) {
@@ -269,6 +242,22 @@ public class GestionMapas {
     public static void main(String[] args) throws IOException {
         GestionMapas gestion = new GestionMapas();
         gestion.colocarInterfaz();
+    }
+
+    public TreeSet<Provincia> getProvinciasEspaña() {
+        return provinciasEspaña;
+    }
+
+    public void setProvinciasEspaña(TreeSet<Provincia> provinciasEspaña) {
+        this.provinciasEspaña = provinciasEspaña;
+    }
+
+    public TreeSet<Poblacion> getPueblosEspaña() {
+        return pueblosEspaña;
+    }
+
+    public void setPueblosEspaña(TreeSet<Poblacion> pueblosEspaña) {
+        this.pueblosEspaña = pueblosEspaña;
     }
 
 }
