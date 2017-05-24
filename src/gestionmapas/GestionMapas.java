@@ -10,6 +10,10 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -24,7 +28,13 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import miventana.MiVentana;
 
 /**
@@ -48,13 +58,14 @@ public class GestionMapas {
         }
 
         insertarPoblacionesEnProvincias();
-
-        miVentana.setSize(400, 500);
+        miVentana.setJMenuBar(null);
+        miVentana.setSize(460, 370);
+        miVentana.setResizable(true);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         miVentana.setLocation(dim.width / 2 - miVentana.getSize().width / 2, dim.height / 2 - miVentana.getSize().height / 2);
         miVentana.setVisible(true);
     }
-    
+
     private void cargarProvinciasDeFichero(String nombreFichero) throws IOException {
         FileReader fileReader;
         BufferedReader bufferedReader = null;
@@ -110,21 +121,21 @@ public class GestionMapas {
     private void colocarInterfaz() {
         Container contentPane = miVentana.getContentPane();
         
-        
         JPanel panelPrincipal = new JPanel(new BorderLayout());
         panelPrincipal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 2), "Búsqueda"));
 
         JPanel panelProvincias = new JPanel(new GridBagLayout());
-        
+
         panelProvincias.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 1), "Búsqueda de Localidades por Provincia"));
         Provincia[] provincias = obtenerArrayProvincias();
-        JLabel etiquetaProvincia= new JLabel("Provincias");
-        JLabel etiquetaLocalidad= new JLabel("Localidades");
+        JLabel etiquetaProvincia = new JLabel("Provincias");
+        JLabel etiquetaLocalidad = new JLabel("Localidades");
+
         JComboBox comboBoxProvincias = new JComboBox(provincias);
-        comboBoxProvincias.setPreferredSize(new Dimension(175,25));
+        comboBoxProvincias.setPreferredSize(new Dimension(175, 25));
         JComboBox comboBoxPoblaciones = new JComboBox();
-        comboBoxPoblaciones.setPreferredSize(new Dimension(175,25));
-        
+        comboBoxPoblaciones.setPreferredSize(new Dimension(175, 25));
+
         GridBagConstraints gBConstraints = new GridBagConstraints();
         gBConstraints.anchor = GridBagConstraints.NORTHWEST;
         gBConstraints.gridx = 0;
@@ -132,7 +143,7 @@ public class GestionMapas {
         panelProvincias.add(etiquetaProvincia, gBConstraints);
         gBConstraints.gridx = 1;
         panelProvincias.add(comboBoxProvincias, gBConstraints);
-        gBConstraints.insets= new Insets(10, 0, 10 , 0);
+        gBConstraints.insets = new Insets(10, 0, 10, 0);
         gBConstraints.gridx = 0;
         gBConstraints.gridy = 1;
         panelProvincias.add(etiquetaLocalidad, gBConstraints);
@@ -168,19 +179,62 @@ public class GestionMapas {
                             JOptionPane.showMessageDialog(null, poblacion.getNombre() + ": \n-Latitud-> "
                                     + poblacion.getLatitud() + " \n-Longitud-> "
                                     + poblacion.getLongitud(), "Localidad Seleccionada", JOptionPane.INFORMATION_MESSAGE);
-                         }
+                        }
                     }
                 }
             }
         });
-//        JPanel panelBusqueda = new JPanel();
-//        panelBusqueda.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 1), "Búsqueda de Localidades de España"));
 
+        JPanel panelBusqueda = new JPanel();
+        panelBusqueda.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.GRAY, 1), "Búsqueda de Localidades de España"));
+
+        JLabel etiquetaBúsqueda = new JLabel("Búsqueda");
+        JTextField jTextBusqueda = new JTextField(12);
+        JTable tablaLocal = new JTable();
+
+        tablaLocal.setPreferredScrollableViewportSize(new Dimension(200, 100));
+        jTextBusqueda.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent ke) {
+                Poblacion[] poblaciones = obtenerArrayPoblacionesEspaña();
+
+                DefaultTableModel tableModel = new DefaultTableModel();
+                tableModel.addColumn("Localidad", poblaciones);
+
+                tablaLocal.setModel(tableModel);
+
+                TableRowSorter<TableModel> tableRS = new TableRowSorter<TableModel>(tableModel);
+                tableRS.setRowFilter(RowFilter.regexFilter(jTextBusqueda.getText(), 0));
+                tablaLocal.setRowSorter(tableRS);
+
+            }
+        });
+
+        tablaLocal.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int fila = tablaLocal.getSelectedRow();
+                Poblacion poblacion = (Poblacion) tablaLocal.getValueAt(fila, 0);
+                JOptionPane.showMessageDialog(null, poblacion.getNombre() + ": \n-Latitud-> "
+                        + poblacion.getLatitud() + " \n-Longitud-> "
+                        + poblacion.getLongitud(), "Localidad Seleccionada", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        panelBusqueda.add(etiquetaBúsqueda);
+        panelBusqueda.add(jTextBusqueda);
+        panelBusqueda.add(new JScrollPane(tablaLocal));
+        
         panelPrincipal.add(panelProvincias, BorderLayout.CENTER);
-        //panelPrincipal.add(panelBusqueda, BorderLayout.SOUTH);
+        panelPrincipal.add(panelBusqueda, BorderLayout.SOUTH);
+        
+        panelBusqueda.setBackground(Color.getHSBColor(15, 15,15 ));
+        panelProvincias.setBackground(Color.getHSBColor(15, 15,15 ));
+        panelPrincipal.setBackground(Color.getHSBColor(15, 15,15 ));
+        
         contentPane.add(panelPrincipal);
         miVentana.setVisible(true);
-        
+
     }
 
     private Provincia[] obtenerArrayProvincias() {
@@ -193,6 +247,16 @@ public class GestionMapas {
         return provincias;
     }
 
+    private Poblacion[] obtenerArrayPoblacionesEspaña() {
+        Poblacion[] poblaciones = new Poblacion[pueblosEspaña.size()];
+        int i = 0;
+        for (Poblacion poblacion : pueblosEspaña) {
+            poblaciones[i] = poblacion;
+            i++;
+        }
+        return poblaciones;
+    }
+
     private Poblacion[] obtenerArrayPoblaciones(TreeSet<Poblacion> treePoblaciones) {
         Poblacion[] poblaciones = new Poblacion[treePoblaciones.size()];
         int i = 0;
@@ -202,7 +266,7 @@ public class GestionMapas {
         }
         return poblaciones;
     }
-    
+
     public static void main(String[] args) throws IOException {
         GestionMapas gestion = new GestionMapas();
         gestion.colocarInterfaz();
