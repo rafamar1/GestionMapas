@@ -56,7 +56,6 @@ public class GestionMapas {
         } catch (IOException ex) {
             Logger.getLogger(GestionMapas.class.getName()).log(Level.SEVERE, null, ex);
         }
-
         insertarPoblacionesEnProvincias();
         miVentana.setJMenuBar(null);
         miVentana.setSize(460, 370);
